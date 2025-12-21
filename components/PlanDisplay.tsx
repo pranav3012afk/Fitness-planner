@@ -3,6 +3,8 @@ import { FitnessPlan, DailyDiet, DailyWorkout, Meal, Exercise } from '../types';
 import { DownloadIcon } from './icons/DownloadIcon';
 import { PlanScoreCard } from './PlanScoreCard';
 import { SupplementSuggestions } from './SupplementSuggestions';
+import { jsPDF } from 'jspdf';
+
 
 const MealIcon: React.FC<{ title: string }> = ({ title }) => {
     const iconClass = "w-6 h-6 text-indigo-300";
@@ -147,10 +149,11 @@ export const PlanDisplay: React.FC<{ plan: FitnessPlan; isAuthenticated: boolean
         if (!printableRef.current) return;
         setIsExporting(true);
 
-        const { jsPDF } = (window as any).jspdf;
-        const html2canvas = (window as any).html2canvas;
-
         try {
+            // dynamic import to avoid "html2canvas is not a function" caused by differing module shapes
+            const html2canvasModule = await import('html2canvas');
+            const html2canvas = (html2canvasModule && (html2canvasModule.default ?? html2canvasModule)) as any;
+
             const canvas = await html2canvas(printableRef.current, {
                 scale: 2,
                 backgroundColor: '#111827',
